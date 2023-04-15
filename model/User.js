@@ -10,6 +10,16 @@ const userSchema = new mongoose.Schema({
     enum: ['Worker', 'Client'],
     required: true
   },
+  location: {
+    lat: {
+      type: Number,
+      required: true,
+    },
+    lng: {
+      type: Number,
+      required: true,
+    }
+  },
   category: {
     type: String,
     enum: ['Electrician', 'Plumber','Carpenter'],

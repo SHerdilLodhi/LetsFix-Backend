@@ -10,6 +10,7 @@ app.use(express.json());
 
 app.use("/user", userrouter);
 
+
 const ALLOWED_FORMATS = ["image/jpeg", "image/png", "image/jpg"];
 
 cloudinary.config({

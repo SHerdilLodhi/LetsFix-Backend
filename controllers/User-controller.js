@@ -54,7 +54,7 @@ exports.UploadPorposal = async (req, res) => {
   }
 };
 
-// Show uploaded proposals (Bids On Board)
+// Show uploaded proposals (Bids On Board)-> user
 
 exports.ProposalsOnBoard = async (req, res) => {
   try {
@@ -65,3 +65,59 @@ exports.ProposalsOnBoard = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+
+// get work -> when enters location hits this api (WORKER)
+
+exports.GetWork = async (req, res) => {
+  const { location } = req.body;
+
+  try {
+    const proposals = await Proposal.find({ location: { $regex: location, $options: 'i' } });
+
+    res.json({ proposals });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+};
+
+
+// Add Bid to proposal (Worker Will Add Bid)  
+
+
+exports.AddBid = async (req, res) => {
+  const { proposalId, worker_id, price, coverletter } = req.body;
+
+  try {
+    const proposal = await Proposal.findById(proposalId);
+
+    if (!proposal) {
+      return res.status(404).json({ error: 'Proposal not found' });
+    }
+
+    const newBid = { worker_id, price, coverletter };
+    proposal.bids.push(newBid);
+    await proposal.save();
+
+    res.json(proposal);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// Workers Available (User)
+
+exports.WorkersAvailable = async (req, res) => {
+  try {
+    const { type } = req.query;
+    const workers = await User.find({ type: { $regex: type ? type.toLowerCase() : 'worker', $options: 'i' } });
+    res.status(200).json(workers);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+

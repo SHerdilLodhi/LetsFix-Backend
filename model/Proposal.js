@@ -7,14 +7,8 @@ const proposalSchema = new mongoose.Schema({
     required: true,
   },
   location: {
-    lat: {
-      type: Number,
-      required: true,
-    },
-    lng: {
-      type: Number,
-      required: true,
-    }
+    type: String,
+    required: true,
   },
   price: {
     type: Number,
