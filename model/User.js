@@ -50,7 +50,18 @@ const userSchema = new mongoose.Schema({
     message: {
       type: String,
       default: ''
-    }
+    },
+    proposal_id: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Proposal"
+      // required: true,
+    },
+    client_id: {
+      type: mongoose.Schema.ObjectId,
+      ref: "User"
+      // required: true,
+    },
+
   }],
   password: {
     type: String,

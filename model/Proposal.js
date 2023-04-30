@@ -6,6 +6,17 @@ const proposalSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  
+  title: {
+    type: String,
+    required: true,
+  },
+
+  status: {
+    type: String,
+    default: 'idol',
+  },
+
   location: {
     type: String,
     required: true,
@@ -31,7 +42,16 @@ const proposalSchema = new mongoose.Schema({
       },
     },
   ],
-
+  invited: {
+    worker_id: {
+      type: mongoose.Schema.ObjectId,
+      ref: "User",
+    },
+    accepted: {
+      type: Boolean,
+      default: false,
+    },
+  },
   bids: [
     {
       worker_id: {
