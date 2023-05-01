@@ -196,3 +196,19 @@ exports.RequestWork = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 }
+
+//Given Bids (WORKER)
+
+exports.GivenBids =async (req, res) => {
+  try {
+    const workerId = req.body.workerId;
+    const proposals = await Proposal.find({ "bids.worker_id": workerId })
+    // .populate('user').populate('invited.worker_id').populate('bids.worker_id');
+    res.json(proposals);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
+  }
+}
+
+//

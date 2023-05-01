@@ -1,7 +1,7 @@
 const express= require("express")
 const router = express.Router()
 const User = require("../model/User")
-const {UserSignup,UserLogin,UploadPorposal,ProposalsOnBoard,GetWork, AddBid, WorkersAvailable, ProposalDetail, AcceptBid, RequestWork} = require("../controllers/User-controller")
+const {UserSignup,UserLogin,UploadPorposal,ProposalsOnBoard,GetWork, AddBid, WorkersAvailable, ProposalDetail, AcceptBid, RequestWork, GivenBids} = require("../controllers/User-controller")
 
 
 
@@ -15,6 +15,7 @@ router.route("/addbid").put(AddBid)
 router.route("/workersavailable").get(WorkersAvailable)
 router.route("/acceptbid").post(AcceptBid)
 router.route("/requestwork").post(RequestWork)
+router.route("/givenbids").post(GivenBids)
 
 module.exports = router;
 

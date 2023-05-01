@@ -18,8 +18,18 @@ const proposalSchema = new mongoose.Schema({
   },
 
   location: {
-    type: String,
-    required: true,
+    formattedAddress: {
+      type: String,
+      required: true,
+    },
+    latitude: {
+      type: Number,
+      required: true,
+    },
+    longitude: {
+      type: Number,
+      required: true,
+    },
   },
   price: {
     type: Number,

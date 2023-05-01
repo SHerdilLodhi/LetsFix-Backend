@@ -10,15 +10,20 @@ const userSchema = new mongoose.Schema({
     enum: ['Worker', 'Client'],
     required: true
   },
+ 
   location: {
-    lat: {
+    formattedAddress: {
+      type: String,
+      required: true,
+    },
+    latitude: {
       type: Number,
       required: true,
     },
-    lng: {
+    longitude: {
       type: Number,
       required: true,
-    }
+    },
   },
   category: {
     type: String,
