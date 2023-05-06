@@ -6,8 +6,19 @@ const formatBufferTo64 = require("./utils/FormatBuffer");
 const multer = require("multer");
 const cloudinary = require("cloudinary");
 app.use(express.json());
+const cors = require('cors');
 //Middlewares
 
+
+
+//CORS
+
+
+
+app.use(cors({
+  origin: 'http://localhost:3000',
+  optionsSuccessStatus: 200
+}));
 app.use("/user", userrouter);
 
 

@@ -14,15 +14,15 @@ const userSchema = new mongoose.Schema({
   location: {
     formattedAddress: {
       type: String,
-      required: true,
+      // required: true,
     },
     latitude: {
       type: Number,
-      required: true,
+      // required: true,
     },
     longitude: {
       type: Number,
-      required: true,
+      // required: true,
     },
   },
   category: {
@@ -45,7 +45,7 @@ const userSchema = new mongoose.Schema({
   },
   dp: {
     type: String,
-    required: true
+    // required: true
   },
   dob: {
     type: Date,
