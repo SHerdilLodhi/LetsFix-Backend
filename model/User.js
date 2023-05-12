@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ['Electrician', 'Plumber','Carpenter'],
+    enum: ['Electrician', 'Plumber','Carpenter',''],
   },
   phone: {
     type: Number,

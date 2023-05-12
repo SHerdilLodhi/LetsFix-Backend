@@ -32,9 +32,9 @@ exports.UserLogin = async (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
     if (user.password !== password) {
-      return res.status(400).json({ message: "Invalid email or password" });
+      return res.status(400).json({ message: "Invalid  password!" });
     }
-    return res.status(200).json({ message: "Login successful" });
+    return res.status(200).json(user);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });
@@ -45,13 +45,16 @@ exports.UserLogin = async (req, res) => {
 
 exports.UploadPorposal = async (req, res) => {
   try {
-    const { user, location, price, description, photos } = req.body;
+
+    const { user,title, location, price, description, photos,date } = req.body;
     const proposal = new Proposal({
       user,
+      title,
       location,
       price,
       description,
       photos,
+      date
     });
     await proposal.save();
     res.status(201).json(proposal);
@@ -75,9 +78,10 @@ exports.ProposalsOnBoard = async (req, res) => {
 //Proposal Detail -> User
 
 exports.ProposalDetail = async (req, res) => {
-  const id = req.body.id;
+  const id = req.params._id;
   try {
     const proposal = await Proposal.findById(id);
+    console.log("Iddd",id)
     if (!proposal) {
       return res.status(404).json({ error: "Proposal not found" });
     }
