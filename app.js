@@ -6,15 +6,12 @@ const formatBufferTo64 = require("./utils/FormatBuffer");
 const multer = require("multer");
 const cloudinary = require("cloudinary");
 app.use(express.json());
+app.use(express.urlencoded({extended: true}));
 const cors = require('cors');
+const { UploadPorposal } = require("./controllers/User-controller");
 //Middlewares
 
-
-
 //CORS
-
-
-
 app.use(cors({
   origin: 'http://localhost:3000',
   optionsSuccessStatus: 200
@@ -59,6 +56,9 @@ const singleUploadCtrl = (req, resp, next) => {
     next();
   });
 };
+
+app.post("/uploadproposal",singleUploadCtrl,UploadPorposal)
+
 app.post("/upload", singleUploadCtrl, async (req, resp) => {
   try {
     for (let i = 0; i < req.files.length; i++) {

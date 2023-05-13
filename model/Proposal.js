@@ -24,11 +24,11 @@ const proposalSchema = new mongoose.Schema({
     },
     latitude: {
       type: Number,
-      // required: true,
+      required: true,
     },
     longitude: {
       type: Number,
-      // required: true,
+      required: true,
     },
   },
   price: {
@@ -40,16 +40,11 @@ const proposalSchema = new mongoose.Schema({
     required: true,
   },
 
-  date: {
-    type: String,
-    required:true,
-  },
-
   photos: [
     {
       public_id: {
         type: String,
-        // required: true,
+        required: true,
       },
       url: {
         type: String,
@@ -84,7 +79,7 @@ const proposalSchema = new mongoose.Schema({
       },
     },
   ],
-});
+},{timestamps: true});
 
 const Proposal = mongoose.model("Proposal", proposalSchema);
 

@@ -1,5 +1,7 @@
 const User = require("../model/User");
 const Proposal = require("../model/Proposal");
+const formatBufferTo64 = require("../utils/FormatBuffer");
+const cloudinary = require ("cloudinary");
 //Signup User
 
 exports.UserSignup = async (req, res) => {
@@ -41,19 +43,28 @@ exports.UserLogin = async (req, res) => {
   }
 };
 
-//Upload Proposal  do pictures wala part
+//Upload/ADD Proposal  do pictures wala part
 
 exports.UploadPorposal = async (req, res) => {
   try {
 
-    const { user,title, location, price, description, photos,date } = req.body;
+    
+    const { user,title, location, price, description,date } = req.body;
+    let picturePath=[]
+    for (let i = 0; i < req.files.length; i++) {
+      const file64 = formatBufferTo64(req.files[i]);
+      let file = await cloudinary.v2.uploader.upload(file64.content, {
+        folder: "proposalImages",
+      });
+      picturePath.push(file)
+    }
     const proposal = new Proposal({
       user,
       title,
-      location,
+      location, 
       price,
       description,
-      photos,
+      photos: picturePath,
       date
     });
     await proposal.save();
