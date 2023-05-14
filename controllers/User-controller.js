@@ -152,6 +152,41 @@ exports.GetWork = async (req, res) => {
   }
 };
 
+
+// Upload DP / Profile Picture
+
+exports.UploadDP = async (req, res) => {
+
+  try {
+  
+    let user = await User.findById(req.params.id);
+  
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    if(user.dp?.public_id){
+      await cloudinary.v2.uploader.destroy(user.dp.public_id)
+    }
+    
+    
+    const file64 = formatBufferTo64(req.files[0]);
+    let file = await cloudinary.v2.uploader.upload(file64.content, {
+      folder: "ProfilePictures",
+    });
+    
+    user.dp = file 
+    let dp = await user.save();
+    
+    res.status(201).json({dp:dp.dp});
+    }
+   catch (error) {
+    console.log(error.message)
+  }
+  
+  
+  }
+
 // Add Bid to proposal (Worker Will Add Bid)  -> (WORKER)
 
 exports.AddBid = async (req, res) => {

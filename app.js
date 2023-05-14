@@ -9,6 +9,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 const cors = require('cors');
 const { UploadPorposal } = require("./controllers/User-controller");
+const { UploadDP } = require("./controllers/User-controller");
 //Middlewares
 
 //CORS
@@ -58,6 +59,8 @@ const singleUploadCtrl = (req, resp, next) => {
 };
 
 app.post("/uploadproposal",singleUploadCtrl,UploadPorposal)
+app.post("/uploaddp/:id",singleUploadCtrl,UploadDP)
+
 
 app.post("/upload", singleUploadCtrl, async (req, resp) => {
   try {
