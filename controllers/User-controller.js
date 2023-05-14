@@ -79,23 +79,24 @@ exports.UploadPorposal = async (req, res) => {
 exports.ProposalsOnBoard = async (req, res) => {
   try {
     const userId = req.body.user;
-    const proposals = await Proposal.find({ user: userId });
+    const proposals = await Proposal.find({ user: userId }).where('user').equals(userId);
     res.status(200).json(proposals);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
 
+
 //Proposal Detail -> User
 
 exports.ProposalDetail = async (req, res) => {
-  const id = req.params._id;
+  const id = req.body._id;
   try {
     const proposal = await Proposal.findById(id);
-    console.log("Iddd",id)
     if (!proposal) {
       return res.status(404).json({ error: "Proposal not found" });
     }
+    console.log(proposal);
     res.json(proposal);
   } catch (error) {
     console.error(error);
@@ -214,9 +215,10 @@ exports.AddBid = async (req, res) => {
 
 exports.WorkersAvailable = async (req, res) => {
   try {
-    const { type } = req.query;
+    const { category, location } = req.query;
     const workers = await User.find({
-      type: { $regex: type ? type.toLowerCase() : "worker", $options: "i" },
+      category: { $regex: category ? category.toLowerCase() : "all", $options: "i" },
+      location: { $regex: location, $options: "i" },
     });
     res.status(200).json(workers);
   } catch (err) {
