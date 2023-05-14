@@ -87,6 +87,8 @@ exports.ProposalsOnBoard = async (req, res) => {
 };
 
 
+
+
 //Proposal Detail -> User
 
 exports.ProposalDetail = async (req, res) => {
@@ -139,11 +141,11 @@ exports.AcceptBid = async (req, res) => {
 // get work -> when enters location hits this api (WORKER)
 
 exports.GetWork = async (req, res) => {
-  const { location } = req.body;
+  const { formattedAddress } = req.body;
 
   try {
     const proposals = await Proposal.find({
-      location: { $regex: location, $options: "i" },
+      "location.formattedAddress": { $regex: formattedAddress, $options: "i" },
     });
 
     res.json({ proposals });
@@ -152,6 +154,7 @@ exports.GetWork = async (req, res) => {
     res.status(500).send("Server error");
   }
 };
+
 
 
 // Upload DP / Profile Picture
