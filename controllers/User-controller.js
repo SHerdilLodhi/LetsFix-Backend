@@ -3,7 +3,7 @@ const Proposal = require("../model/Proposal");
 const formatBufferTo64 = require("../utils/FormatBuffer");
 const cloudinary = require ("cloudinary");
 //Signup User
-
+//doneeeeee
 exports.UserSignup = async (req, res) => {
   try {
     const { email } = req.body;
@@ -25,7 +25,7 @@ exports.UserSignup = async (req, res) => {
 };
 
 //Login User
-
+//doneeeeee
 exports.UserLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -44,7 +44,7 @@ exports.UserLogin = async (req, res) => {
 };
 
 //Upload/ADD Proposal  do pictures wala part
-
+//doneeeeee
 exports.UploadPorposal = async (req, res) => {
   try {
 
@@ -75,7 +75,7 @@ exports.UploadPorposal = async (req, res) => {
 };
 
 // Show uploaded proposals (Proposals On Board)-> user
-
+//doneeeeee
 exports.ProposalsOnBoard = async (req, res) => {
   try {
     const userId = req.body.user;
@@ -88,7 +88,7 @@ exports.ProposalsOnBoard = async (req, res) => {
 
 
 //Proposal Detail -> User
-
+//doneeeeee
 exports.ProposalDetail = async (req, res) => {
   const id = req.body._id;
   try {
@@ -136,14 +136,15 @@ exports.AcceptBid = async (req, res) => {
   }
 };
 
-// get work -> when enters location hits this api (WORKER)
 
+// get work -> when enters location hits this api (WORKER)
+//doneeeeee
 exports.GetWork = async (req, res) => {
-  const { location } = req.body;
+  const { formattedAddress } = req.body;
 
   try {
     const proposals = await Proposal.find({
-      location: { $regex: location, $options: "i" },
+      "location.formattedAddress": { $regex: formattedAddress, $options: "i" },
     });
 
     res.json({ proposals });
@@ -153,9 +154,8 @@ exports.GetWork = async (req, res) => {
   }
 };
 
-
 // Upload DP / Profile Picture
-
+//doneeeeee
 exports.UploadDP = async (req, res) => {
 
   try {
@@ -188,10 +188,35 @@ exports.UploadDP = async (req, res) => {
   
   }
 
-// Add Bid to proposal (Worker Will Add Bid)  -> (WORKER)
+// Workers Available (User)
 
+
+
+exports.WorkersAvailable = async (req, res) => {
+  try {
+    const { category, location } = req.body;
+    const categoryRegex = new RegExp(category || "all", "i");
+    const locationRegex = new RegExp(location, "i");
+    const workers = await User.find({
+      category: categoryRegex,
+      location: locationRegex,
+    });
+    res.status(200).json(workers);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+
+
+
+
+
+// Add Bid to proposal (Worker Will Add Bid)  -> (WORKER)
+//doneeeeee
 exports.AddBid = async (req, res) => {
-  const { proposalId, worker_id, price, coverletter } = req.body;
+  const { proposalId, worker_id, price, coverletter,dp } = req.body;
 
   try {
     const proposal = await Proposal.findById(proposalId);
@@ -204,29 +229,36 @@ exports.AddBid = async (req, res) => {
     proposal.bids.push(newBid);
     await proposal.save();
 
-    res.json(proposal);
+    // Find the user (client) associated with the proposal
+    const client = await User.findById(proposal.user);
+
+    // Find the worker who placed the bid
+    const worker = await User.findById(worker_id);
+
+    // Create a notification for the client
+    const notification = {
+      message: `A bid has been added by ${worker.username}`,
+      proposal_id: proposalId,
+      client_id: proposal.user,
+      worker_id: worker_id,
+      dp: dp////////////////
+    };
+
+    // Add the notification to the client's notifications array
+    client.notifications.push(notification);
+    await client.save();
+
+    // Fetch the worker's details
+    const workerDetails = await User.findById(worker_id);
+
+    res.json({ proposal, bidder: workerDetails });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 };
 
-// Workers Available (User)
 
-exports.WorkersAvailable = async (req, res) => {
-  try {
-    const { category, location } = req.query;
-    const workers = await User.find({
-      category: { $regex: category ? category.toLowerCase() : "all", $options: "i" },
-      location: { $regex: location, $options: "i" },
-    });
-    res.status(200).json(workers);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-// Workers available -> Request Work (User/client) MODAL
 
 exports.RequestWork = async (req, res) => {
   try {
@@ -236,7 +268,7 @@ exports.RequestWork = async (req, res) => {
     const notification = {
       message: `User ${userId} has requested you to work`,
       client_id: userId,
-      proposal_id: null,
+      proposal_id: workerId,
     };
     worker.notifications.push(notification);
     await worker.save();
@@ -250,7 +282,7 @@ exports.RequestWork = async (req, res) => {
 }
 
 //Given Bids (WORKER)
-
+//doneeeeee
 exports.GivenBids =async (req, res) => {
   try {
     const workerId = req.body.workerId;
