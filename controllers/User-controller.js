@@ -87,6 +87,8 @@ exports.ProposalsOnBoard = async (req, res) => {
 };
 
 
+
+
 //Proposal Detail -> User
 //doneeeeee
 exports.ProposalDetail = async (req, res) => {
@@ -154,6 +156,11 @@ exports.GetWork = async (req, res) => {
   }
 };
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 2cb6e0e3d493481c7dc0f260c223a07878b6a4e6
 // Upload DP / Profile Picture
 //doneeeeee
 exports.UploadDP = async (req, res) => {
