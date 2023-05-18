@@ -107,10 +107,9 @@ exports.ProposalDetail = async (req, res) => {
 };
 
 //PDModal onclick api -> User
-
 exports.AcceptBid = async (req, res) => {
   try {
-    const { userId, proposalId } = req.body;
+    const { userId, proposalId, workerId } = req.body;
     console.log(proposalId);
     const user = await User.findById(userId);
     const proposal = await Proposal.findById(proposalId);
@@ -124,19 +123,28 @@ exports.AcceptBid = async (req, res) => {
         .json({ message: "User, proposal, or bid not found." });
     }
 
+    const worker = await Worker.findById(workerId);
+    if (!worker) {
+      return res.status(404).json({ message: "Worker not found." });
+    }
+
     const message = `You have a new notification regarding your bid on proposal ${proposal.title}.`;
     console.log(proposal._id);
     user.notifications.push({ message, proposal_id: proposal._id.toString() });
     await user.save();
     proposal.status = "accepted";
     await proposal.save();
-    return res
-      .status(200)
-      .json({ message: "Notification created successfully." , proposal_id: proposal._id.toString() });
+
+    return res.status(200).json({
+      message: "Notification created successfully.",
+      proposal_id: proposal._id.toString(),
+      worker: worker,
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
+
 
 
 // get work -> when enters location hits this api (WORKER)
@@ -226,15 +234,17 @@ exports.AddBid = async (req, res) => {
       return res.status(404).json({ error: "Proposal not found" });
     }
 
-    const newBid = { worker_id, price, coverletter };
+    // Find the worker who placed the bid
+    const worker = await User.findById(worker_id);
+
+    const newBid = { worker_id, price, coverletter, worker , dp };
     proposal.bids.push(newBid);
     await proposal.save();
 
     // Find the user (client) associated with the proposal
     const client = await User.findById(proposal.user);
 
-    // Find the worker who placed the bid
-    const worker = await User.findById(worker_id);
+    
 
     // Create a notification for the client
     const notification = {
@@ -263,11 +273,11 @@ exports.AddBid = async (req, res) => {
 
 exports.RequestWork = async (req, res) => {
   try {
-    const { userId, workerId } = req.body;
+    const { userId, workerId  ,user } = req.body;
 
     const worker = await User.findById(workerId);
     const notification = {
-      message: `User ${userId} has requested you to work`,
+      message: `${user.username} has requested you to work`,
       client_id: userId,
       proposal_id: workerId,
     };
@@ -275,7 +285,7 @@ exports.RequestWork = async (req, res) => {
     await worker.save();
 
     // Send a success response
-    res.status(200).json({ message: `you have recieved a request for work from user ${userId}` });
+    res.status(200).json({ message: `you have recieved a request for work from user ${user.username}` });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
