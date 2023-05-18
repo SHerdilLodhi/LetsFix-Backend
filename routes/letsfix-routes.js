@@ -1,7 +1,7 @@
 const express= require("express")
 const router = express.Router()
 const User = require("../model/User")
-const {UserSignup,UserLogin,UploadPorposal,ProposalsOnBoard,GetWork, AddBid, WorkersAvailable, ProposalDetail, AcceptBid, RequestWork, GivenBids} = require("../controllers/User-controller")
+const {UserSignup,UserLogin,UploadPorposal,ProposalsOnBoard,GetWork, AddBid, WorkersAvailable, ProposalDetail, AcceptBid, RequestWork, GivenBids, EditWorkerProfile, EditProfile} = require("../controllers/User-controller")
 
 
 
@@ -16,7 +16,7 @@ router.route("/workersavailable").post(WorkersAvailable)
 router.route("/acceptbid").post(AcceptBid)
 router.route("/requestwork").post(RequestWork)
 router.route("/givenbids").post(GivenBids)
-
+router.route("/editprofile").put(EditProfile)
 module.exports = router;
 
 //643a91bf0d062db5957919d9 pid

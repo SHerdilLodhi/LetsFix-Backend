@@ -306,4 +306,71 @@ exports.GivenBids =async (req, res) => {
   }
 }
 
+
+// Update user / edit profile
+exports.EditProfile = async (req, res) => {
+  const {
+    _id: userId,
+    username,
+    type,
+    location,
+    category,
+    phone,
+    email,
+    gender,
+    dp,
+    dob,
+    password
+  } = req.body;
+
+  try {
+    // Check if email already exists for other users
+    const existingEmailUser = await User.findOne({
+      email: email,
+      _id: { $ne: userId } // Exclude the current user from the check
+    });
+
+    if (existingEmailUser) {
+      return res.status(400).json({ error: 'Email already exists.' });
+    }
+
+    // Check if phone number already exists for other users
+    const existingPhoneUser = await User.findOne({
+      phone: phone,
+      _id: { $ne: userId } // Exclude the current user from the check
+    });
+
+    if (existingPhoneUser) {
+      return res.status(400).json({ error: 'Phone number already exists.' });
+    }
+
+    // Find and update the user
+    const user = await User.findByIdAndUpdate(userId, {
+      $set: {
+        username,
+        type,
+        location,
+        category,
+        phone,
+        email,
+        gender,
+        dp,
+        dob,
+        password
+      }
+    }, { new: true });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error.' });
+  }
+};
+
+
+
 //
