@@ -2,15 +2,23 @@ const User = require("../model/User");
 const Proposal = require("../model/Proposal");
 const formatBufferTo64 = require("../utils/FormatBuffer");
 const cloudinary = require ("cloudinary");
+const uuidv4 = require ("uuid");
 //Signup User
 //doneeeeee
 exports.UserSignup = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, phone } = req.body;
+
     // Check if the email is already taken
     const emailExists = await User.findOne({ email: email });
     if (emailExists) {
       return res.status(400).json({ error: "Email already exists" });
+    }
+
+    // Check if the phone number is already taken
+    const phoneExists = await User.findOne({ phone: phone });
+    if (phoneExists) {
+      return res.status(400).json({ error: "Phone number already exists" });
     }
 
     // Create a new user object
@@ -110,7 +118,6 @@ exports.ProposalDetail = async (req, res) => {
 exports.AcceptBid = async (req, res) => {
   try {
     const { userId, proposalId, workerId } = req.body;
-    console.log(proposalId);
     const user = await User.findById(userId);
     const proposal = await Proposal.findById(proposalId);
     const bid = proposal.bids.find(
@@ -123,25 +130,58 @@ exports.AcceptBid = async (req, res) => {
         .json({ message: "User, proposal, or bid not found." });
     }
 
-    const worker = await Worker.findById(workerId);
+    const worker = await User.findById(workerId);
     if (!worker) {
       return res.status(404).json({ message: "Worker not found." });
     }
 
     const message = `You have a new notification regarding your bid on proposal ${proposal.title}.`;
     console.log(proposal._id);
-    user.notifications.push({ message, proposal_id: proposal._id.toString() });
-    await user.save();
+    worker.notifications.push({ message, proposal_id: proposal._id.toString() });
+    await worker.save();
     proposal.status = "accepted";
     await proposal.save();
 
     return res.status(200).json({
       message: "Notification created successfully.",
-      proposal_id: proposal._id.toString(),
-      worker: worker,
+    
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
+  }
+};
+
+
+
+
+
+//worker own bid find  (worker)
+
+
+exports.GetBidByWorkerId = async (req, res) => {
+  try {
+    const { proposalId, workerId } = req.body;
+
+    const proposal = await Proposal.findById(proposalId)
+      .populate("bids.worker_id")
+      .select("bids");
+
+    if (!proposal) {
+      return res.status(404).json({ message: "Proposal not found." });
+    }
+
+    const bid = proposal.bids.find(
+      (bid) => bid.worker_id.toString() === workerId
+    );
+
+    if (!bid) {
+      return res.status(404).json({ message: "Bid not found for the given worker." });
+    }
+
+    res.json(bid);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -206,15 +246,21 @@ exports.WorkersAvailable = async (req, res) => {
     const { category, location } = req.body;
     const categoryRegex = new RegExp(category || "all", "i");
     const locationRegex = new RegExp(location, "i");
+    
+    // Update user's location in the database
+    await User.updateMany({}, { $set: { location: { formattedAddress: location } } });
+    
     const workers = await User.find({
       category: categoryRegex,
       location: locationRegex,
     });
+    
     res.status(200).json(workers);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 
 
@@ -294,17 +340,52 @@ exports.RequestWork = async (req, res) => {
 
 //Given Bids (WORKER)
 //doneeeeee
-exports.GivenBids =async (req, res) => {
+exports.GivenBids = async (req, res) => {
   try {
     const workerId = req.body.workerId;
     const proposals = await Proposal.find({ "bids.worker_id": workerId })
-    // .populate('user').populate('invited.worker_id').populate('bids.worker_id');
-    res.json(proposals);
+      .populate({
+        path: "bids.worker_id",
+        select: "-notifications"
+      });
+
+    const matchingBid =  proposals.map((proposal)=>proposal.bids.filter(bid => bid.worker_id.toString() === workerId)
+    )
+
+    res.json({ proposals, matchingBid });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
   }
-}
+};
+
+
+
+//user location update
+exports.updateUserLocation = async (req, res) => {
+  try {
+    const { userId, formattedAddress } = req.body;
+
+    // Find the user by ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Update the formatted address
+    user.location.formattedAddress = formattedAddress;
+    
+    // Save the updated user
+    await user.save();
+
+    res.json({ message: "User location updated successfully.", user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 
 
 // Update user / edit profile
@@ -373,4 +454,58 @@ exports.EditProfile = async (req, res) => {
 
 
 
-//
+//FORGOT PASSWORD
+
+
+exports.forgotPassword =
+    async (req, resp, next) => {
+
+        try {
+            let email = await User.findOne({ email:req.body.email})
+
+            if(!email) {return resp.status(404).json({success:false,message:"User Not Found"})}
+
+            const resetToken = uuidv4.v4();
+            const resetTokenExpiry = Date.now() + 3600000; // 1 hour
+
+            email.resetPasswordToken = resetToken;
+            email.resetPasswordExpires = resetTokenExpiry;
+            const resetURL = `http://localhost:3000/resetPassword/${resetToken}`;
+
+            const sendMail = require('../utils/Mail');
+            await sendMail({
+                from:"lodhisherdil1@gmail.com" , to: req.body.email, subject: "Incineration", text: `Reset Password`, html: require('../utils/Template')({
+                    link: resetURL
+                })
+            })
+            await email.save();
+            resp.status(200).json({ success: true, message: "Reset Link Sent" })
+
+        } catch (error) {
+            await User.updateOne({email:req.body.email},{$set:{resetPasswordToken:null,resetPasswordExpires:null}})
+            resp.status(500).json({success:false,message:error.message})
+        }
+
+
+    }
+//RESET PASSWORD
+
+exports.resetPassword = 
+  async (req, resp, next) => {
+        
+      let token = req.params.uuid;
+      let isValiduuidToken = uuidv4.validate(token);
+
+      if(!isValiduuidToken){return resp.status(500).json({success:false,message:"Password Cannot be changed right now"}) }
+
+      const user = await User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now()} });
+
+      if(!user) {return resp.status(404).json({success:false,message:"Password Cannot be changed right now"})}
+      user.password = req.body.password;
+      user.resetPasswordToken = null;
+      user.resetPasswordExpires= null
+      await user.save();
+
+      resp.status(201).json({ success: true, message: "Password Updated" })
+
+  }

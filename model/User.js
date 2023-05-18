@@ -84,7 +84,9 @@ const userSchema = new mongoose.Schema({
   rating: {
     type: Number,
     default: 0
-  }
+  },
+  resetPasswordToken:{type:String},
+   resetPasswordExpires:{type:Date},
 });
 
 const User = mongoose.model('User', userSchema);

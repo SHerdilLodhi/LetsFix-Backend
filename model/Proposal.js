@@ -77,6 +77,10 @@ const proposalSchema = new mongoose.Schema({
         type: String,
         // required: true,
       },
+      Date: {
+        type: Date,
+        default: Date.now,
+      }
     },
   ],
 },{timestamps: true});

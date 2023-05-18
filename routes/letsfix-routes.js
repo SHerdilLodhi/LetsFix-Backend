@@ -1,7 +1,7 @@
 const express= require("express")
 const router = express.Router()
 const User = require("../model/User")
-const {UserSignup,UserLogin,UploadPorposal,ProposalsOnBoard,GetWork, AddBid, WorkersAvailable, ProposalDetail, AcceptBid, RequestWork, GivenBids, EditWorkerProfile, EditProfile} = require("../controllers/User-controller")
+const {UserSignup,UserLogin,UploadPorposal,ProposalsOnBoard,GetWork, AddBid, WorkersAvailable, ProposalDetail, AcceptBid, RequestWork, GivenBids, EditWorkerProfile, EditProfile, forgotPassword, resetPassword, GetBidByWorkerId, updateUserLocation} = require("../controllers/User-controller")
 
 
 
@@ -17,6 +17,13 @@ router.route("/acceptbid").post(AcceptBid)
 router.route("/requestwork").post(RequestWork)
 router.route("/givenbids").post(GivenBids)
 router.route("/editprofile").put(EditProfile)
+router.route("/forgotpassword").put(forgotPassword)
+router.route("/resetpassword/:uuid").put(resetPassword)
+router.route("/fetchbid").post(GetBidByWorkerId)
+router.route("/updatelocation").post(updateUserLocation)
+
+
+
 module.exports = router;
 
 //643a91bf0d062db5957919d9 pid
