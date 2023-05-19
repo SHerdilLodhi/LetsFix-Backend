@@ -194,15 +194,24 @@ exports.GetWork = async (req, res) => {
 
   try {
     const proposals = await Proposal.find({
-      "location.formattedAddress": { $regex: formattedAddress, $options: "i" },
-    });
+      'location.formattedAddress': { $regex: formattedAddress, $options: 'i' },
+    })
+      .populate({
+        path: 'bids.worker_id',
+        select: 'username dp',
+        model: 'User',
+      })
+      .exec();
 
     res.json({ proposals });
   } catch (error) {
     console.error(error);
-    res.status(500).send("Server error");
+    res.status(500).json({ error: 'Server error' });
   }
 };
+
+
+
 // Upload DP / Profile Picture
 //doneeeeee
 exports.UploadDP = async (req, res) => {
@@ -263,6 +272,24 @@ exports.WorkersAvailable = async (req, res) => {
 
 
 
+
+exports.findWorkers = async (req, res) => {
+  try {
+    const { category, location } = req.body;
+
+    const locationRegex = new RegExp(location, 'i');
+
+    const workers = await User.find({
+      category: category,
+      'location.formattedAddress': { $regex: locationRegex },
+    });
+
+    res.json({ workers });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
 
 
 
