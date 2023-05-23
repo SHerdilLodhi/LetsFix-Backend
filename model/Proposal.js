@@ -17,6 +17,11 @@ const proposalSchema = new mongoose.Schema({
     default: 'idol',
   },
 
+  acceptedForWorker_id: {
+      type: mongoose.Schema.ObjectId,
+    ref: "User",
+    },
+    
   location: {
     formattedAddress: {
       type: String,

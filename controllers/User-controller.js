@@ -128,10 +128,6 @@ exports.AcceptBid = async (req, res) => {
       // (bid) => bid.worker_id.toString() === userId
     );
 
-    console.log("Bid got:",bid)
-    console.log("user id:",userId)
-    console.log("proposalId:",proposalId)
-    console.log("workerId:",workerId)
 
     if (!user) {
       return (
@@ -151,31 +147,26 @@ exports.AcceptBid = async (req, res) => {
           .json({ message: "bid not found." })
       )
     }
-    // if (!user || !proposal || !bid) {
-    //   return res
-    //     .status(404)
-    //     .json({ message: "User, proposal, or bid not found." });
-    // }
 
     const worker = await User.findById(workerId);
     if (!worker) {
       return res.status(404).json({ message: "Worker not found." });
     }
 
-    const message = `You have a new notification regarding your bid on proposal ${proposal.title}.`;
+    const message = `Congrats! your bid has been accepted on proposal ${proposal.title}.`;
     console.log(proposal._id);
-    worker.notifications.push({ message, proposal_id: proposal._id.toString() });
+    worker.notifications.push({ message, proposal_id: proposal._id.toString(), link: `/workavailable/workdetail/${proposal._id}` });
     await worker.save();
     proposal.status = "accepted";
     await proposal.save();
-
+proposal.acceptedForWorker_id = worker._id;
+await proposal.save();
     return res.status(200).json({
       message: "Notification created successfully.",
 
     });
   } catch (error) {
-    return 
-      res.status(500).json({ message: error.message })
+    return res.status(500).json({ message: error.message })
     // console.error(error.message)
     
   }
@@ -183,7 +174,23 @@ exports.AcceptBid = async (req, res) => {
 
 
 
+//getporposal through notification (Worker)
+exports.GetProposal = async (req, res) => {
+  const proposalId = req.params.id;
 
+  try {
+    const proposal = await Proposal.findById(proposalId);
+    if (!proposal) {
+      return res.status(404).json({ error: 'Proposal not found' });
+    }
+    res.json(proposal);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+}
+
+module.exports = router;
 
 //worker own bid find  (worker)
 
@@ -359,6 +366,8 @@ exports.AddBid = async (req, res) => {
     };
 
     // Add the notification to the client's notifications array
+    let link = `/proposaldetail/${proposalId}`;
+    notification.link=link
     client.notifications.push(notification);
     await client.save();
 

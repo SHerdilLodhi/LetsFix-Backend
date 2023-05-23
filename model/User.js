@@ -74,7 +74,10 @@ const userSchema = new mongoose.Schema({
       ref: "User"
       // required: true,
     },
-
+    link: {
+      type: String,
+    },
+    
   }],
   password: {
     type: String,
