@@ -1,8 +1,9 @@
 const User = require("../model/User");
 const Proposal = require("../model/Proposal");
 const formatBufferTo64 = require("../utils/FormatBuffer");
-const cloudinary = require('cloudinary').v2;
+const cloudinary = require('cloudinary');
 const uuidv4 = require("uuid");
+const { ObjectId } = require('mongodb');
 //Signup User
 //doneeeeee
 exports.UserSignup = async (req, res) => {
@@ -120,15 +121,41 @@ exports.AcceptBid = async (req, res) => {
     const { userId, proposalId, workerId } = req.body;
     const user = await User.findById(userId);
     const proposal = await Proposal.findById(proposalId);
+    // const foundBId = new ObjectId(proposal.bids.worker_id);
+    // console.log("proposal:",foundBId)
     const bid = proposal.bids.find(
-      (bid) => bid.worker_id.toString() === userId
+      (bid) => bid.worker_id
+      // (bid) => bid.worker_id.toString() === userId
     );
 
-    if (!user || !proposal || !bid) {
-      return res
-        .status(404)
-        .json({ message: "User, proposal, or bid not found." });
+    console.log("Bid got:",bid)
+    console.log("user id:",userId)
+    console.log("proposalId:",proposalId)
+    console.log("workerId:",workerId)
+
+    if (!user) {
+      return (
+        res.status(404)
+          .json({ message: "User not found." })
+      )
     }
+    if (!proposal) {
+      return (
+        res.status(404)
+          .json({ message: "proposal not found." })
+      )
+    }
+    if (!bid) {
+      return (
+        res.status(404)
+          .json({ message: "bid not found." })
+      )
+    }
+    // if (!user || !proposal || !bid) {
+    //   return res
+    //     .status(404)
+    //     .json({ message: "User, proposal, or bid not found." });
+    // }
 
     const worker = await User.findById(workerId);
     if (!worker) {
@@ -147,7 +174,10 @@ exports.AcceptBid = async (req, res) => {
 
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return 
+      res.status(500).json({ message: error.message })
+    // console.error(error.message)
+    
   }
 };
 
@@ -216,44 +246,36 @@ exports.GetWork = async (req, res) => {
 //doneeeeee
 
 exports.UploadDP = async (req, res) => {
-  try {
-    const { id } = req.params;
 
-    const user = await User.findById(id);
+  try {
+
+    let user = await User.findById(req.params.id);
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    if (user.dp && user.dp.public_id) {
-      await cloudinary.uploader.destroy(user.dp.public_id);
+    if (user.dp?.public_id) {
+      await cloudinary.v2.uploader.destroy(user.dp.public_id)
     }
 
-    if (!req.files || !req.files.picture) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
 
-    const file = req.files.picture;
-    const file64 = formatBufferTo64(file.buffer);
-
-    const uploadedFile = await cloudinary.uploader.upload(file64.content, {
+    const file64 = formatBufferTo64(req.files[0]);
+    let file = await cloudinary.v2.uploader.upload(file64.content, {
       folder: "ProfilePictures",
     });
 
-    user.dp = {
-      url: uploadedFile.secure_url,
-      public_id: uploadedFile.public_id
-    };
+    user.dp = file
+    let dp = await user.save();
 
-    const updatedUser = await user.save();
-
-    res.status(201).json({ dp: updatedUser.dp });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(201).json({ dp: dp.dp });
   }
-};
+  catch (error) {
+    console.log(error.message)
+  }
 
+
+}
 // Workers Available (User)
 
 
@@ -318,7 +340,7 @@ exports.AddBid = async (req, res) => {
     // Find the worker who placed the bid
     const worker = await User.findById(worker_id);
 
-    const newBid = { worker_id, price, coverletter, worker, dp };
+    const newBid = { worker_id, price, coverletter, worker };
     proposal.bids.push(newBid);
     await proposal.save();
 
@@ -346,7 +368,7 @@ exports.AddBid = async (req, res) => {
     res.json({ proposal, bidder: workerDetails });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Server error" });
+    // res.status(500).json({ error: "Server error" });
   }
 };
 
