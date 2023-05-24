@@ -190,7 +190,6 @@ exports.GetProposal = async (req, res) => {
   }
 }
 
-module.exports = router;
 
 //worker own bid find  (worker)
 
