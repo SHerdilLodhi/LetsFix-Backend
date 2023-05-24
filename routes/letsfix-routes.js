@@ -1,7 +1,7 @@
 const express= require("express")
 const router = express.Router()
 const User = require("../model/User")
-const {UserSignup,UserLogin,UploadPorposal,ProposalsOnBoard,GetWork, AddBid, WorkersAvailable, ProposalDetail, AcceptBid, RequestWork, GivenBids, EditWorkerProfile, EditProfile, forgotPassword, resetPassword, GetBidByWorkerId, updateUserLocation, findWorkers} = require("../controllers/User-controller")
+const {UserSignup,UserLogin,UploadPorposal,ProposalsOnBoard,GetWork, AddBid, WorkersAvailable, ProposalDetail, AcceptBid, RequestWork, GivenBids, EditWorkerProfile, EditProfile, forgotPassword, resetPassword, GetBidByWorkerId, updateUserLocation, findWorkers, rating, FetchProposalbyid} = require("../controllers/User-controller")
 
 
 
@@ -22,8 +22,10 @@ router.route("/resetpassword/:uuid").put(resetPassword)
 router.route("/fetchbid").post(GetBidByWorkerId)
 router.route("/updatelocation").post(updateUserLocation)
 router.route("/findworkers").post(findWorkers)
+router.route("/rating").post(rating)
+router.route("/fetchproposal/:id").get(FetchProposalbyid)
 
-
+FetchProposalbyid
 
 module.exports = router;
 

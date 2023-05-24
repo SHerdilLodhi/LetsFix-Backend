@@ -88,12 +88,72 @@ exports.UploadPorposal = async (req, res) => {
 exports.ProposalsOnBoard = async (req, res) => {
   try {
     const userId = req.body.user;
-    const proposals = await Proposal.find({ user: userId }).where('user').equals(userId);
+    const proposals = await Proposal.find({ user: userId }).where('user').equals(userId).populate('acceptedForWorker_id', 'username dp'); // Use populate to fetch the user's name and dp
     res.status(200).json(proposals);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
+
+
+// Rating api (worker/ client)
+
+
+exports.rating = async (req, res) => {
+  try {
+    const { proposalId, raterId, rating, professionalism, behaviour, skills } = req.body;
+
+    // Find the proposal
+    const proposal = await Proposal.findById(proposalId);
+    if (!proposal) {
+      return res.status(404).json({ message: 'Proposal not found' });
+    }
+
+    // Check if the rater is a client or worker
+    const rater = await User.findById(raterId);
+    if (!rater) {
+      return res.status(404).json({ message: 'Rater not found' });
+    }
+
+    if (rater.type === 'Client') {
+      // Rating for client
+      proposal.ratingClient.push({
+        rating,
+        rater_id: raterId,
+        proposal_id_of_session: proposalId,
+      });
+    } else if (rater.type === 'Worker') {
+      // Rating for worker
+      proposal.ratingWorker.push({
+        professionalism,
+        behaviour,
+        skills,
+        rater_id: raterId,
+        proposal_id_of_session: proposalId,
+      });
+    } else {
+      return res.status(400).json({ message: 'Invalid rater type' });
+    }
+
+    // Update the proposal status to "completed"
+    proposal.status = 'completed';
+
+    // Save the updated proposal
+    await proposal.save();
+
+    res.status(200).json({ message: 'Rating added successfully and proposal status updated' });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+
+
+
+
+
+
+
 
 
 
@@ -189,6 +249,33 @@ exports.GetProposal = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 }
+
+//Fetching proposal by id 
+
+exports.FetchProposalbyid = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the proposal by ID
+    const proposal = await Proposal.findById(id)
+      .populate('user', 'username')
+      .populate('acceptedForWorker_id', 'username')
+      .populate('invited.worker_id', 'username')
+      .populate('bids.worker_id', 'username');
+
+    if (!proposal) {
+      return res.status(404).json({ message: 'Proposal not found' });
+    }
+
+    res.status(200).json({ proposal });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+
+
+
 
 
 //worker own bid find  (worker)

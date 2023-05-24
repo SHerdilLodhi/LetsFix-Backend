@@ -84,10 +84,47 @@ const userSchema = new mongoose.Schema({
     required: true
   }
   ,
+ratingClient:[{
+
   rating: {
     type: Number,
     default: 0
   },
+  rater_id: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User"
+    // required: true,
+  },
+  proposal_id_of_session: {
+    type: mongoose.Schema.ObjectId,
+    ref: "Proposal"
+  },
+}]
+,
+  ratingworker:[{
+    rater_id: {
+      type: mongoose.Schema.ObjectId,
+      ref: "User"
+      // required: true,
+    },
+    proposal_id_of_session: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Proposal"
+    },
+    professionalism: {
+      type: Number,
+      default: 0
+    },
+    behaviour: {
+      type: Number,
+      default: 0
+    }, 
+    skills: {
+      type: Number,
+      default: 0
+    },
+  }
+  ],
   resetPasswordToken:{type:String},
    resetPasswordExpires:{type:Date},
 });
