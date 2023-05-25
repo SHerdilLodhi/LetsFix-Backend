@@ -98,7 +98,6 @@ exports.ProposalsOnBoard = async (req, res) => {
 
 // Rating api (worker/ client)
 
-
 exports.rating = async (req, res) => {
   try {
     const { proposalId, raterId, rating, professionalism, behaviour, skills } = req.body;
@@ -115,15 +114,21 @@ exports.rating = async (req, res) => {
       return res.status(404).json({ message: 'Rater not found' });
     }
 
-    if (rater.type === 'Client') {
+    if (rater.type === 'Worker') {
       // Rating for client
+      if (!proposal.ratingClient) {
+        proposal.ratingClient = []; // Initialize as an empty array
+      }
       proposal.ratingClient.push({
         rating,
         rater_id: raterId,
         proposal_id_of_session: proposalId,
       });
-    } else if (rater.type === 'Worker') {
+    } else if (rater.type === 'Client') {
       // Rating for worker
+      if (!proposal.ratingWorker) {
+        proposal.ratingWorker = []; // Initialize as an empty array
+      }
       proposal.ratingWorker.push({
         professionalism,
         behaviour,
@@ -146,7 +151,6 @@ exports.rating = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-
 
 
 
