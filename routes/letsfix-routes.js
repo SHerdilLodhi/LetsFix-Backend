@@ -25,7 +25,6 @@ router.route("/findworkers").post(findWorkers)
 router.route("/rating").post(rating)
 router.route("/fetchproposal/:id").get(FetchProposalbyid)
 
-FetchProposalbyid
 
 module.exports = router;
 

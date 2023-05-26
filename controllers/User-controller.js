@@ -4,6 +4,8 @@ const formatBufferTo64 = require("../utils/FormatBuffer");
 const cloudinary = require('cloudinary');
 const uuidv4 = require("uuid");
 const { ObjectId } = require('mongodb');
+const moment = require("moment-timezone");
+
 //Signup User
 //doneeeeee
 exports.UserSignup = async (req, res) => {
@@ -88,7 +90,7 @@ exports.UploadPorposal = async (req, res) => {
 exports.ProposalsOnBoard = async (req, res) => {
   try {
     const userId = req.body.user;
-    const proposals = await Proposal.find({ user: userId }).where('user').equals(userId).populate('acceptedForWorker_id', 'username dp'); // Use populate to fetch the user's name and dp
+    const proposals = await Proposal.find({ user: userId }).where('user').equals(userId).populate('acceptedForWorker_id', 'username dp category'); // Use populate to fetch the user's name and dp
     res.status(200).json(proposals);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -100,9 +102,14 @@ exports.ProposalsOnBoard = async (req, res) => {
 
 exports.rating = async (req, res) => {
   try {
-    const { proposalId, raterId, rating, professionalism, behaviour, skills } = req.body;
+    const { proposalId, raterId, rating, professionalism, behaviour, skills, toberated_User } = req.body;
 
-    // Find the proposal
+    // Find the User
+    const toberated_user = await User.findById(toberated_User);
+    if (!toberated_user) {
+      return res.status(404).json({ message: 'User to be rated not found' });
+    }
+
     const proposal = await Proposal.findById(proposalId);
     if (!proposal) {
       return res.status(404).json({ message: 'Proposal not found' });
@@ -116,38 +123,42 @@ exports.rating = async (req, res) => {
 
     if (rater.type === 'Worker') {
       // Rating for client
-      if (!proposal.ratingClient) {
-        proposal.ratingClient = []; // Initialize as an empty array
+      if (!toberated_user.ratingClient) {
+        toberated_user.ratingClient = []; // Initialize as an empty array
       }
-      proposal.ratingClient.push({
+      toberated_user.ratingClient.push({
         rating,
         rater_id: raterId,
         proposal_id_of_session: proposalId,
+        date: moment().tz("Asia/Karachi").format() // Store current date in PKT
       });
     } else if (rater.type === 'Client') {
       // Rating for worker
-      if (!proposal.ratingWorker) {
-        proposal.ratingWorker = []; // Initialize as an empty array
+      if (!toberated_user.ratingworker) {
+        toberated_user.ratingworker = []; // Initialize as an empty array
       }
-      proposal.ratingWorker.push({
+      toberated_user.ratingworker.push({
         professionalism,
         behaviour,
         skills,
-        rater_id: raterId,
+        rater_id: raterId, 
         proposal_id_of_session: proposalId,
+        date: moment().tz("Asia/Karachi").format() // Store current date in PKT
       });
     } else {
       return res.status(400).json({ message: 'Invalid rater type' });
     }
-
-    // Update the proposal status to "completed"
+    
+    // Update the proposal status to "completed" and set the date
     proposal.status = 'completed';
-
-    // Save the updated proposal
+    proposal.completedAt = moment().tz("Asia/Karachi").format(); // Store completed date in PKT
     await proposal.save();
+    
+    // Save the updated user
+    await toberated_user.save();
 
-    res.status(200).json({ message: `Rating added successfully and proposal status updated ${proposal.ratingWorker}` });
-    console.log("ratingWorker proposal:" ,proposal)
+    res.status(200).json({ message: `Rating added successfully for user: ${toberated_user.username}` });
+    console.log("Rated user:", toberated_user);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -163,15 +174,31 @@ exports.rating = async (req, res) => {
 
 
 
+
+
 //Proposal Detail -> User
 //doneeeeee
+
 exports.ProposalDetail = async (req, res) => {
   const id = req.body._id;
   try {
-    const proposal = await Proposal.findById(id);
+    const proposal = await Proposal.findById(id)
+      .populate({
+        path: 'bids.worker_id',
+        model: 'User',
+        select: '-password',
+        populate: {
+          path: 'dp',
+          model: 'ProfilePicture',
+          select: 'url',
+        },
+      })
+      .exec();
+
     if (!proposal) {
       return res.status(404).json({ error: "Proposal not found" });
     }
+
     console.log(proposal);
     res.json(proposal);
   } catch (error) {
@@ -179,6 +206,7 @@ exports.ProposalDetail = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
 
 //PDModal onclick api -> User
 exports.AcceptBid = async (req, res) => {
