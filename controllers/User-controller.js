@@ -146,7 +146,8 @@ exports.rating = async (req, res) => {
     // Save the updated proposal
     await proposal.save();
 
-    res.status(200).json({ message: 'Rating added successfully and proposal status updated' });
+    res.status(200).json({ message: `Rating added successfully and proposal status updated ${proposal.ratingWorker}` });
+    console.log("ratingWorker proposal:" ,proposal)
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -223,8 +224,8 @@ exports.AcceptBid = async (req, res) => {
     await worker.save();
     proposal.status = "accepted";
     await proposal.save();
-proposal.acceptedForWorker_id = worker._id;
-await proposal.save();
+    proposal.acceptedForWorker_id = worker._id; //worker whose bid is accepted
+    await proposal.save();
     return res.status(200).json({
       message: "Notification created successfully.",
 
@@ -232,7 +233,7 @@ await proposal.save();
   } catch (error) {
     return res.status(500).json({ message: error.message })
     // console.error(error.message)
-    
+
   }
 };
 
@@ -425,7 +426,7 @@ exports.findWorkers = async (req, res) => {
 // Add Bid to proposal (Worker Will Add Bid)  -> (WORKER)
 //doneeeeee
 exports.AddBid = async (req, res) => {
-  const { proposalId, worker_id, price, coverletter, dp } = req.body;
+  const { proposalId, worker_id, price, coverletter, dp  } = req.body;
 
   try {
     const proposal = await Proposal.findById(proposalId);
@@ -437,7 +438,7 @@ exports.AddBid = async (req, res) => {
     // Find the worker who placed the bid
     const worker = await User.findById(worker_id);
 
-    const newBid = { worker_id, price, coverletter, worker };
+    const newBid = { worker_id, price, coverletter, worker  };
     proposal.bids.push(newBid);
     await proposal.save();
 
@@ -457,7 +458,7 @@ exports.AddBid = async (req, res) => {
 
     // Add the notification to the client's notifications array
     let link = `/proposaldetail/${proposalId}`;
-    notification.link=link
+    notification.link = link
     client.notifications.push(notification);
     await client.save();
 
