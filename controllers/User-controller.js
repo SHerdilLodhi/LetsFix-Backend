@@ -531,11 +531,22 @@ exports.GivenBids = async (req, res) => {
     const proposals = await Proposal.find({ "bids.worker_id": workerId })
       .populate({
         path: "bids.worker_id",
-        select: "-notifications"
+        select: "-notifications -password",
+        populate: {
+          path: "dp",
+          select: "public_id url"
+        }
+      })
+      .populate({
+        path: "user",
+        select: "username",
+        populate: {
+          path: "dp",
+          select: "public_id url"
+        }
       });
 
-    const matchingBid = proposals.map((proposal) => proposal.bids.filter(bid => bid.worker_id.toString() === workerId)
-    )
+    const matchingBid = proposals.map((proposal) => proposal.bids.filter(bid => bid.worker_id.toString() === workerId));
 
     res.json({ proposals, matchingBid });
   } catch (error) {
@@ -543,6 +554,7 @@ exports.GivenBids = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
 
 
 
