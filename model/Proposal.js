@@ -7,6 +7,19 @@ const proposalSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+
+
+    clientRate: {
+      type: Boolean,
+      default: false,
+    },
+    workerRate: {
+      type: Boolean,
+      default: false,
+    },
+
+  
+
     title: {
       type: String,
       required: true,
@@ -82,6 +95,7 @@ const proposalSchema = new mongoose.Schema(
         },
       },
     ],
+
     completedAt: {
       type: Date,
     },

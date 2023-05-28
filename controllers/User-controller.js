@@ -126,6 +126,7 @@ exports.rating = async (req, res) => {
       if (!toberated_user.ratingClient) {
         toberated_user.ratingClient = []; // Initialize as an empty array
       }
+      
       toberated_user.ratingClient.push({
         rating,
         rater_id: raterId,
@@ -154,6 +155,13 @@ exports.rating = async (req, res) => {
     proposal.completedAt = moment().tz("Asia/Karachi").format(); // Store completed date in PKT
     await proposal.save();
     
+    if(rater.type=="Worker"){
+      proposal.clientRate = true;
+      await proposal.save();
+    }else if(rater.type=="Client"){
+      proposal.workerRate = true;
+      await proposal.save();
+    }
     // Save the updated user
     await toberated_user.save();
 
