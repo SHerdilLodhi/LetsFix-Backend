@@ -273,6 +273,26 @@ exports.AcceptBid = async (req, res) => {
   }
 };
 
+//get notification user /worker
+
+
+exports.GetNotifications = async (req, res) => {
+  const userId = req.body.userId;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const notifications = user.notifications;
+    res.json({ notifications });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+}
+
 
 
 //getporposal through notification (Worker)
