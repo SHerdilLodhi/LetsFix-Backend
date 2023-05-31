@@ -343,7 +343,7 @@ exports.FetchProposalbyid = async (req, res) => {
       .populate('user', 'username')
       .populate('acceptedForWorker_id', 'username')
       .populate('invited.worker_id', 'username')
-      .populate('bids.worker_id', 'username');
+      .populate('bids.worker_id', 'username dp');
 
     if (!proposal) {
       return res.status(404).json({ message: 'Proposal not found' });
@@ -726,6 +726,35 @@ exports.EditProfile = async (req, res) => {
   }
 };
 
+// fetch rating
+
+exports.FetchRating = async (req, res) => {
+  try {
+    const { proposalid, userid } = req.body;
+
+    // Find the user with the provided worker userid
+    const user = await User.findOne({ _id: userid });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Search for the matching ratingworker object
+    const rating = user.ratingworker.find(
+      (ratingObj) => ratingObj.proposal_id_of_session.toString() === proposalid
+    );
+
+    if (!rating) {
+      return res.status(404).json({ message: 'Rating not found for the given proposalid' });
+    }
+
+    // Return the matched rating object in the response
+    res.json(rating);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
 
 
 //FORGOT PASSWORD

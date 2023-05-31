@@ -1,7 +1,7 @@
 const express= require("express")
 const router = express.Router()
 const User = require("../model/User")
-const {UserSignup,UserLogin,UploadPorposal,ProposalsOnBoard,GetWork, AddBid, WorkersAvailable, ProposalDetail, AcceptBid, RequestWork, GivenBids, EditWorkerProfile, EditProfile, forgotPassword, resetPassword, GetBidByWorkerId, updateUserLocation, findWorkers, rating, FetchProposalbyid, GetNotifications, DeleteProposal, DeleteBid} = require("../controllers/User-controller")
+const {UserSignup,UserLogin,UploadPorposal,ProposalsOnBoard,GetWork, AddBid, WorkersAvailable, ProposalDetail, AcceptBid, RequestWork, GivenBids, EditWorkerProfile, EditProfile, forgotPassword, resetPassword, GetBidByWorkerId, updateUserLocation, findWorkers, rating, FetchProposalbyid, GetNotifications, DeleteProposal, DeleteBid, FetchRating} = require("../controllers/User-controller")
 
 
 
@@ -27,6 +27,7 @@ router.route("/fetchproposal/:id").get(FetchProposalbyid)
 router.route("/getnotifications").post(GetNotifications)
 router.route('/proposals/delete').delete(DeleteProposal);
 router.route('/deletebid').delete(DeleteBid);
+router.route('/fetchrating').post(FetchRating);
 
 
 // FetchProposalbyid
