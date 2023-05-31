@@ -97,6 +97,27 @@ exports.ProposalsOnBoard = async (req, res) => {
   }
 };
 
+//Delete proposal 
+exports.DeleteProposal = async (req, res) => {
+  try {
+    const proposalId = req.body.proposalId;
+    
+    // Check if the proposal exists
+    const proposal = await Proposal.findById(proposalId);
+    if (!proposal) {
+      return res.status(404).json({ error: 'Proposal not found' });
+    }
+    
+    // Delete the proposal
+    await Proposal.findByIdAndDelete(proposalId);
+    
+    res.status(200).json({ message: 'Proposal deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+
 
 // Rating api (worker/ client)
 
@@ -228,7 +249,7 @@ exports.AcceptBid = async (req, res) => {
       (bid) => bid.worker_id
       // (bid) => bid.worker_id.toString() === userId
     );
-
+    
 
     if (!user) {
       return (
@@ -254,9 +275,9 @@ exports.AcceptBid = async (req, res) => {
       return res.status(404).json({ message: "Worker not found." });
     }
 
-    const message = `Congrats! your bid has been accepted on proposal ${proposal.title}.`;
+    const message = `Congrats! your bid accepted on ${proposal.title}.`;
     console.log(proposal._id);
-    worker.notifications.push({ message, proposal_id: proposal._id.toString(), link: `/workavailable/workdetail/${proposal._id}` });
+    worker.notifications.push({ message,user: user.dp?.url, proposal_id: proposal._id.toString(), link: `/workavailable/workdetail/${proposal._id}` });
     await worker.save();
     proposal.status = "accepted";
     await proposal.save();
@@ -509,7 +530,7 @@ exports.AddBid = async (req, res) => {
       proposal_id: proposalId,
       client_id: proposal.user,
       worker_id: worker_id,
-      dp: dp////////////////
+      dp: worker.dp?.url////////////////
     };
 
     // Add the notification to the client's notifications array
@@ -527,7 +548,34 @@ exports.AddBid = async (req, res) => {
     // res.status(500).json({ error: "Server error" });
   }
 };
+//deletebid
+exports.DeleteBid = async (req, res) => {
+  const { proposalId, workerId } = req.body;
 
+  try {
+    const proposal = await Proposal.findById(proposalId);
+
+    if (!proposal) {
+      return res.status(404).json({ error: 'Proposal not found' });
+    }
+
+    // Find the index of the bid in the proposal's bids array
+    const bidIndex = proposal.bids.findIndex((bid) => bid.worker_id.toString() === workerId);
+
+    if (bidIndex === -1) {
+      return res.status(404).json({ error: 'Bid not found' });
+    }
+
+    // Remove the bid from the proposal's bids array
+    proposal.bids.splice(bidIndex, 1);
+    await proposal.save();
+
+    res.json({ message: 'Bid deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
 
 
 exports.RequestWork = async (req, res) => {
@@ -539,6 +587,7 @@ exports.RequestWork = async (req, res) => {
       message: `${user.username} has requested you to work`,
       client_id: userId,
       proposal_id: workerId,
+      dp: user?.dp?.url,
     };
     worker.notifications.push(notification);
     await worker.save();
