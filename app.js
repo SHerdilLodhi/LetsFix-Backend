@@ -8,15 +8,36 @@ const cloudinary = require("cloudinary");
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 const cors = require('cors');
+const { Server } = require("socket.io");
+const http = require("http");
+
 const { UploadPorposal } = require("./controllers/User-controller");
 const { UploadDP } = require("./controllers/User-controller");
 //Middlewares
 
 //CORS
-app.use(cors({
-  origin: 'http://localhost:3000',
-  optionsSuccessStatus: 200
-}));
+// app.use(cors({
+//   origin: 'http://localhost:3000',
+//   optionsSuccessStatus: 200
+// }));
+
+
+// const server = http.createServer(app);
+// const io = new Server(server);
+
+
+app.use(cors()); // Enable CORS for all routes
+const server = require('http').Server(app);
+
+
+const io = require('socket.io')(server, {
+  cors: {
+    origin: 'http://localhost:3000',     // Specify the origin URL of your frontend application
+    methods: ['GET', 'POST'],           // Specify the allowed HTTP methods
+    allowedHeaders: ['Content-Type'],   // Specify the allowed headers
+    credentials: true,                 // Set this to true if your frontend application sends cookies
+  },
+});
 app.use("/user", userrouter);
 
 
@@ -58,6 +79,21 @@ const singleUploadCtrl = (req, resp, next) => {
   });
 };
 
+
+io.on("connection", (socket) => {
+  console.log("A new client connected");
+
+  // Handle events and emit updates as needed
+  // Example: When a bid is added, emit an event to notify clients
+  socket.on("bidAdded", (proposalId) => {
+    // Emit the updated data to connected clients
+    io.emit("bidAdded", proposalId);
+  });
+
+  // Handle other events as required
+});
+
+
 app.post("/uploadproposal",singleUploadCtrl,UploadPorposal)
 app.post("/uploaddp/:id",singleUploadCtrl,UploadDP)
 
@@ -84,7 +120,10 @@ mongoose
     "mongodb+srv://admin:kRiMYVnvpok7RFod@cluster0.bmbsgbv.mongodb.net/letsfix?retryWrites=true&w=majority"
   )
   .then(() => console.log("connected to database"))
-  .then(() => app.listen(5000))
+  .then(() => server.listen(5000, () => {
+    console.log("Server listening on port 5000");
+  })
+   )
   .catch((err) => console.log(err));
 //kRiMYVnvpok7RFod
 

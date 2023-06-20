@@ -187,7 +187,7 @@ exports.rating = async (req, res) => {
     await toberated_user.save();
 
     res.status(200).json({ message: `Rating added successfully for user: ${toberated_user.username}` });
-    console.log("Rated user:", toberated_user);
+    // console.log("Rated user:", toberated_user);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -228,7 +228,7 @@ exports.ProposalDetail = async (req, res) => {
       return res.status(404).json({ error: "Proposal not found" });
     }
 
-    console.log(proposal);
+    // console.log(proposal);
     res.json(proposal);
   } catch (error) {
     console.error(error);
@@ -276,7 +276,7 @@ exports.AcceptBid = async (req, res) => {
     }
 
     const message = `Congrats! your bid accepted on ${proposal.title}.`;
-    console.log(proposal._id);
+    // console.log(proposal._id);
     worker.notifications.push({ message,user: user.dp?.url, proposal_id: proposal._id.toString(), link: `/workavailable/workdetail/${proposal._id}` });
     await worker.save();
     proposal.status = "accepted";
