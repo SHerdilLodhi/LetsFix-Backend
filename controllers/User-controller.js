@@ -6,8 +6,14 @@ const uuidv4 = require("uuid");
 const { ObjectId } = require('mongodb');
 const moment = require("moment-timezone");
 
-//Signup User
-//doneeeeee
+
+let io;
+
+exports.initialize = function(socketIO) {
+  io = socketIO;
+}
+
+
 exports.UserSignup = async (req, res) => {
   try {
     const { email, phone } = req.body;
@@ -47,6 +53,7 @@ exports.UserLogin = async (req, res) => {
     if (user.password !== password) {
       return res.status(400).json({ message: "Invalid  password!" });
     }
+    
     return res.status(200).json(user);
   } catch (err) {
     console.error(err);
@@ -283,6 +290,7 @@ exports.AcceptBid = async (req, res) => {
     await proposal.save();
     proposal.acceptedForWorker_id = worker._id; //worker whose bid is accepted
     await proposal.save();
+    io.emit("abc",{data:{ message,user: user.dp?.url, proposal_id: proposal._id.toString(), link: `/workavailable/workdetail/${proposal._id}` }})
     return res.status(200).json({
       message: "Notification created successfully.",
 
@@ -504,7 +512,7 @@ exports.findWorkers = async (req, res) => {
 //doneeeeee
 exports.AddBid = async (req, res) => {
   const { proposalId, worker_id, price, coverletter, dp  } = req.body;
-
+  
   try {
     const proposal = await Proposal.findById(proposalId);
 
@@ -532,16 +540,19 @@ exports.AddBid = async (req, res) => {
       worker_id: worker_id,
       dp: worker.dp?.url////////////////
     };
-
+    
+    let s = io.emit(client._id.toString(),{data:notification});
+    console.log(s)
+    
     // Add the notification to the client's notifications array
     let link = `/proposaldetail/${proposalId}`;
     notification.link = link
     client.notifications.push(notification);
+   
     await client.save();
 
     // Fetch the worker's details
     const workerDetails = await User.findById(worker_id);
-
     res.json({ proposal, bidder: workerDetails });
   } catch (err) {
     console.error(err);
