@@ -5,39 +5,25 @@ const app = express();
 const formatBufferTo64 = require("./utils/FormatBuffer");
 const multer = require("multer");
 const cloudinary = require("cloudinary");
+const controller = require("./controllers/User-controller")
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 const cors = require('cors');
-const { Server } = require("socket.io");
-const http = require("http");
 
 const { UploadPorposal } = require("./controllers/User-controller");
 const { UploadDP } = require("./controllers/User-controller");
-//Middlewares
 
-//CORS
-// app.use(cors({
-//   origin: 'http://localhost:3000',
-//   optionsSuccessStatus: 200
-// }));
+const http = require('http');
+const socketIO = require('socket.io');
+const server = http.createServer(app);
+const io = socketIO(server,{cors:{origin:['http://localhost:3000']}});
 
-
-// const server = http.createServer(app);
-// const io = new Server(server);
+io.on("connection", (socket) => {
+  controller.initialize(socket)
+})
 
 
 app.use(cors()); // Enable CORS for all routes
-const server = require('http').Server(app);
-
-
-const io = require('socket.io')(server, {
-  cors: {
-    origin: 'http://localhost:3000',     // Specify the origin URL of your frontend application
-    methods: ['GET', 'POST'],           // Specify the allowed HTTP methods
-    allowedHeaders: ['Content-Type'],   // Specify the allowed headers
-    credentials: true,                 // Set this to true if your frontend application sends cookies
-  },
-});
 app.use("/user", userrouter);
 
 
@@ -80,18 +66,7 @@ const singleUploadCtrl = (req, resp, next) => {
 };
 
 
-io.on("connection", (socket) => {
-  console.log("A new client connected");
 
-  // Handle events and emit updates as needed
-  // Example: When a bid is added, emit an event to notify clients
-  socket.on("bidAdded", (proposalId) => {
-    // Emit the updated data to connected clients
-    io.emit("bidAdded", proposalId);
-  });
-
-  // Handle other events as required
-});
 
 
 app.post("/uploadproposal",singleUploadCtrl,UploadPorposal)
