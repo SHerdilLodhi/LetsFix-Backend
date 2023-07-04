@@ -13,14 +13,7 @@ const cors = require('cors');
 const { UploadPorposal } = require("./controllers/User-controller");
 const { UploadDP } = require("./controllers/User-controller");
 
-const http = require('http');
-const socketIO = require('socket.io');
-const server = http.createServer(app);
-const io = socketIO(server,{cors:{origin:['http://localhost:3000']}});
 
-io.on("connection", (socket) => {
-  controller.initialize(socket)
-})
 
 
 app.use(cors()); // Enable CORS for all routes
@@ -95,7 +88,7 @@ mongoose
     "mongodb+srv://admin:kRiMYVnvpok7RFod@cluster0.bmbsgbv.mongodb.net/letsfix?retryWrites=true&w=majority"
   )
   .then(() => console.log("connected to database"))
-  .then(() => server.listen(5000, () => {
+  .then(() => app.listen(5000, () => {
     console.log("Server listening on port 5000");
   })
    )
