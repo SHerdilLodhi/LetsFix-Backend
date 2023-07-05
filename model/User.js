@@ -77,7 +77,12 @@ const userSchema = new mongoose.Schema({
     },
     dp: {
       type: String
-    }
+    },
+
+    seen: {
+      type: Boolean,
+      default: false,
+    },
     
   }],
   password: {

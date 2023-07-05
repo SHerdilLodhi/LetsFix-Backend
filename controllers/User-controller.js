@@ -247,8 +247,7 @@ exports.AcceptBid = async (req, res) => {
     const { userId, proposalId, workerId } = req.body;
     const user = await User.findById(userId);
     const proposal = await Proposal.findById(proposalId);
-    // const foundBId = new ObjectId(proposal.bids.worker_id);
-    // console.log("proposal:",foundBId)
+
     const bid = proposal.bids.find(
       (bid) => bid.worker_id
       // (bid) => bid.worker_id.toString() === userId
@@ -290,7 +289,6 @@ exports.AcceptBid = async (req, res) => {
 
     let s = await pusher.trigger(worker._id.toString(),"notification",{notification:{ message,user: user.dp?.url, proposal_id: proposal._id.toString(), link: `/workavailable/workdetail/${proposal._id}` }});
     
-    console.log("🚀 ~ file: User-controller.js:293 ~ exports.AcceptBid= ~ s:", s)
 
     return res.status(200).json({
       message: "Notification created successfully.",
