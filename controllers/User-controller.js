@@ -539,7 +539,7 @@ exports.AddBid = async (req, res) => {
       proposal_id: proposalId,
       client_id: proposal.user,
       worker_id: worker_id,
-      dp: worker.dp?.url////////////////
+      dp:dp////////////////
     };
       
     // Add the notification to the client's notifications array
