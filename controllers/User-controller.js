@@ -498,8 +498,26 @@ exports.WorkersAvailable = async (req, res) => {
   }
 };
 
+//change Location
+
+exports.ChangeL = async (req, res) => {
+  const { formattedAddress,userId } = req.body;
+
+  try {
+    const user = await User.findByIdAndUpdate(userId, { 'location.formattedAddress': formattedAddress }, { new: true });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ message: 'User Location updated successfully', user });
+  } catch (error) {
+    console.error('Error updating user formattedAddress', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
 
 
+//findworker
 
 exports.findWorkers = async (req, res) => {
   try {
