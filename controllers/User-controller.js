@@ -89,6 +89,50 @@ exports.UploadPorposal = async (req, res) => {
   }
 };
 
+//uploadporposal2
+
+exports.UploadProposal2 = async (req, res) => {
+  try {
+    const {
+      user,
+      clientRate,
+      workerRate,
+      title,
+      status,
+      acceptedForWorker_id,
+      location: { formattedAddress },
+      price,
+      description,
+      invited
+    } = req.body;
+
+    const proposal = new Proposal({
+      user,
+      clientRate,
+      workerRate,
+      title,
+      status,
+      acceptedForWorker_id,
+      location: {
+        formattedAddress,
+       
+      },
+      price,
+      description,
+      invited
+    });
+
+    await proposal.save();
+
+    res.status(201).json(proposal);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
+
 // Show uploaded proposals (Proposals On Board)-> user
 //doneeeeee
 exports.ProposalsOnBoard = async (req, res) => {
@@ -637,7 +681,7 @@ exports.RequestWork = async (req, res) => {
     await worker.save();
 
     // Send a success response
-    res.status(200).json({ message: `you have recieved a request for work from user ${user.username}` });
+    res.status(200).json({ message: `you have recieved a request for work from user ${user.username}`});
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
